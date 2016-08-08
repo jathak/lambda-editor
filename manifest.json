@@ -1,0 +1,27 @@
+{
+  "name": "Lambda Editor",
+  "description": "An Ace-based code editor written in 61A Scheme.",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": ["js/background.js"]
+    }
+  },
+  "sandbox": {
+    "pages": ["scheme/env.html"]
+  },
+  "permissions": [
+    "clipboardRead",
+    "clipboardWrite",
+    "contextMenus",
+    "storage",
+    "notifications",
+    "syncFileSystem",
+    "identity",
+    {"fileSystem": ["write", "retainEntries", "directory"]}
+  ],
+  "offline_enabled": true,
+  "minimum_chrome_version": "45",
+  "icons": { "16": "icons/lambda-16.png", "128": "icons/lambda-128.png" }
+}
