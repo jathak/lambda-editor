@@ -16,11 +16,11 @@ but should instead by synced by Chrome to your other devices.
 
 To Do List:
 
--[] Add folders to sidebar
--[] Get undo and redo working (Ace should have them built-in)
--[] Sublime-style go to anything search
--[] More full-featured status bar
--[] More options for default themes
+- Add folders to sidebar
+- Get undo and redo working (Ace should have them built-in)
+- Sublime-style go to anything search
+- More full-featured status bar
+- More options for default themes
 
 ### Building and Installing
 
