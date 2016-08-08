@@ -25,6 +25,6 @@ To Do List:
 ### Building and Installing
 
 You'll want to run `make scheme` to get the latest Scheme interpreter and
-libraries from [scheme.cs61a.org][http://scheme.cs61a.org].
+libraries from [scheme.cs61a.org](http://scheme.cs61a.org).
 
 You should then be able to load it into Chrome as an unpacked extension.
