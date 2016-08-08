@@ -11,8 +11,7 @@ as a Chrome Packaged App.
 At the moment, it can read and save multiple files in tabs, which persist
 between uses of the app. You can also input Scheme code to hack at pieces of the
 editor. Configuration is done through various Scheme files, which can be opened
-from the settings menu. Config files are not stored directly on your computer,
-but should instead by synced by Chrome to your other devices.
+from the settings menu.
 
 To Do List:
 
