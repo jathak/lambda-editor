@@ -14,7 +14,7 @@ import 'dart:io';
 List ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'ubuntu'];
 
 // this may vary
-List ALLOWED_ORIGINS = ['chrome-extension://mhiojnfeldhbngifldjpohdncclpooop'];
+List ALLOWED_ORIGINS = ['chrome-extension://mhiojnfeldhbngifldjpohdncclpooop', 'chrome-extension://knmmaebcmbpdeeeabnfkddldeinmmjdh'];
 
 HttpServer server;
 int port = 6320;
