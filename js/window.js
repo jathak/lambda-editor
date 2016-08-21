@@ -101,9 +101,20 @@ commands['read-file'] = function(entryId, id) {
 commands['save-file'] = function(entryId, contents, id) {
   chrome.fileSystem.restoreEntry(entryId, function (entry) {
     entry.createWriter(function (writer) {
+      var truncated = false;
+      var blob = new Blob([contents]);
+
+      writer.onwriteend = function(e) {
+        if (!truncated) {
+          truncated = true;
+          // You need to explicitly set the file size to truncate
+          // any content that might have been there before
+          this.truncate(blob.size);
+        }
+        respond("success!", id);
+      };
       writer.onerror = makeErrorHandler(id);
-      writer.onwriteend = ()=>respond(null, id);
-      writer.write(new Blob([contents]), {type: 'text/plain'});
+      writer.write(blob, {type: 'text/plain'});
     }, makeErrorHandler(id));
   })
 }

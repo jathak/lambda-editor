@@ -30,7 +30,8 @@
   (js-call (file-session file) "on" "change" listener))
 (define (save-file file)
   ((file-saver file) (file-session file))
-  ((file-saved-listener file)))
+  (define listener (file-saved-listener file))
+  (if (procedure? listener) (listener)))
 
 (define (reconstruct-file metadata)
   (define path (car metadata))
@@ -63,7 +64,7 @@
       (if (js-object? result) (error "could not read file") result))
     (lambda (session)
       (define result (wrapper-command "save-file" entry (get-session-text session)))
-      (if (js-object? result) (error "could not save file") result))
+      (if (js-object? result) (error "could not save file")))
     "chromefs"
     entry))
 
