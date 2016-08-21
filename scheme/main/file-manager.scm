@@ -40,7 +40,8 @@
   (cond
     ((eq? type "chromefs") (make-chromefs-file path (car rest-info)))
     ((eq? type "config") (make-config-file (car rest-info)))
-    ((eq? type "socket") (make-socket-file path))))
+    ((eq? type "socket") (make-socket-file path))
+    ((eq? type "log") (make-log-file path (car (car rest-info)) (car (cdr (car rest-info)))))))
 
 (define (find-mode path)
   (cond
@@ -94,6 +95,78 @@
     (lambda (session)
       (socket-write-file path (get-session-text session)))
     "socket"))
+
+(define (make-log-file name contents . opt)
+  (define pid (if (null? opt) nil (car opt)))
+  (define container (list contents pid))
+  (define log
+    (make-file
+      name
+      (lambda () (car container))
+      (lambda (session) (file-update log))
+      "log"
+      container))
+  log)
+
+(define (set-log-pid! log pid)
+  (define container (car (cdr (cdr (file-metadata log)))))
+  (set-car! (cdr container) pid))
+
+(define (send-log-process-input log line)
+  (define pid (car (cdr (car (cdr (cdr (file-metadata log)))))))
+  (if (not (null? pid))
+      (begin
+        (append-to-log log line "\n")
+        (shell-input pid line "\n"))))
+
+(define (append-to-log log . msgs)
+  (define container (car (cdr (cdr (file-metadata log)))))
+  (set-car! container (string-append (car container) (apply string-append msgs)))
+  (save-file log)
+  (save-tabs-state))
+
+(define (shell-log command . opt)
+  (define directory (if (null? opt) shell-pwd (car opt)))
+  (define log
+    (make-log-file
+      (car (split command " "))
+      (string-append shell-user "@" shell-hostname ":"
+                     directory "$ " command "\n")))
+  (js-object "Promise"
+    (lambda (resolve reject)
+      (define (on-output line)
+        (append-to-log log line "\n"))
+      (define (on-exit code)
+        (resolve code))
+      (define pid (shell-start command on-output on-output on-exit directory))
+      (set-log-pid! log pid)
+      (open-file log))))
+
+(register-command
+  "lambda:shell-log"
+  (lambda (editor)
+    (define file (tab-file active-tab))
+    (define path (file-path file))
+    (define type (car (cdr (file-metadata file))))
+    (define dir
+      (substring
+        path
+        0
+        (- (string-length path) 1
+           (string-length (last (split path "/"))))))
+    (if (or (eq? dir "") (not (eq? type "socket"))) (define dir shell-pwd))
+    (shell-log (prompt "Enter Bash command to run from " dir) dir)))
+
+(register-command
+  "lambda:shell-log-input"
+  (lambda (editor)
+    (define log (tab-file active-tab))
+    (if (eq? (car (cdr (file-metadata log))) "log")
+        (send-log-process-input log (prompt "Input to current process")))))
+
+
+(define (user-select-file)
+  (make-socket-file (prompt "Enter file path here")))
 
 (define (user-select-chrome-file)
   (apply make-chromefs-file (wrapper-command "user-open-file")))

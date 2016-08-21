@@ -33,3 +33,5 @@
 (register-binding "lambda:save-file-as" "Ctrl-Shift-S")
 (register-binding "lambda:save-all-files" "Ctrl-Alt-S")
 (register-binding "lambda:close-file" "Ctrl-W")
+(register-binding "lambda:shell-log" "Ctrl-Shift-P")
+(register-binding "lambda:shell-log-input" "Ctrl-I")

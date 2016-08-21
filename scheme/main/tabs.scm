@@ -67,11 +67,13 @@
   (set! active-tab tab)
   (js-set! (tab-element tab) "className" "tab tab-active")
   (set-ace-session! (file-session (tab-file tab)))
-  (define file-metas
-    (map (lambda (tab) (file-metadata (tab-file tab))) _tab-list))
-  (wrapper-command "set-local-property" "fileMetas" file-metas)
+  (save-tabs-state)
   (wrapper-command "set-local-property" "currentTab" (tab-index tab))
   undefined)
+(define (save-tabs-state)
+  (define file-metas
+    (map (lambda (tab) (file-metadata (tab-file tab))) _tab-list))
+  (wrapper-command "set-local-property" "fileMetas" file-metas))
 (define (deactivate-tab tab)
   (set-car! (cdr (cdr tab)) #f)
   (js-set! (tab-element tab) "className" "tab")
@@ -88,9 +90,9 @@
   (js-call tab-bar "removeChild" (tab-element tab))
   (if (null? _tab-list)
       (new-tab)
-      (activate-tab (car _tab-list))))
-
-
+      (if (eq? tab active-tab)
+          (activate-tab (car _tab-list))
+          (activate-tab active-tab))))
 
 (define (deactivate-all-tabs)
   (define (helper lst)
@@ -104,7 +106,7 @@
   (define (helper lst)
     (if (null? lst)
         nil
-        (if (eq? (tab-file (car lst)) file)
+        (if (equal? (tab-file (car lst)) file)
             (car lst)
             (helper (cdr lst)))))
   (helper _tab-list))
@@ -113,4 +115,8 @@
   (activate-tab (make-tab file)))
 
 (define (new-tab)
-  nil)
+  (save-tabs-state))
+
+(register-command
+  "lambda:close-file"
+  (lambda (editor) (close-tab active-tab)))

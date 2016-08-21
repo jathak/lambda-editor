@@ -1,4 +1,6 @@
 (define (make-folder-entry path)
+  (if (js-call-on-string path "endsWith" "/")
+      (define path (substring path 0 (- (string-length path) 1))))
   (list "folder"
         path
         (make-entry-element path #t)))
@@ -16,6 +18,7 @@
 
 (define (find-children path)
   (define folder-paths (split-shell-lines (shell-run "ls -d $PWD/*/" path)))
+  (define folder-paths (map (lambda (x) (substring x 0 (- (string-length x) 1))) folder-paths))
   (define folders (map make-folder-entry folder-paths))
   (define file-paths (split-shell-lines (shell-run "for f in *; do [[ -d \"$f\" ]] || echo \"$f\"; done" path)))
   (define file-paths (map (lambda (x) (string-append path "/" x)) file-paths))
@@ -34,8 +37,9 @@
       (define children-wrapper (make-element "div" "folder-children"))
       (add-child element children-wrapper)
       (define visible #f)
-      (on-event element "click"
+      (on-event label "click"
         (lambda (event)
+          (print path)
           (set! visible (not visible))
           (js-set! children-wrapper "innerHTML" "")
           (if visible
@@ -45,13 +49,10 @@
                     (add-entry-to-element c children-wrapper))
                    children))))))
     (begin
-      (on-event element "click"
+      (on-event label "click"
         (lambda (event)
           (open-file (make-socket-file path))))))
   element)
-
-
-
 
 (define (add-entry-to-sidebar entry)
   (add-entry-to-element entry (query-selector ".sidebar")))
@@ -62,6 +63,9 @@
   (if (js-object? old-parent)
       (js-call old-parent "removeChild" element))
   (add-child parent element))
+
+(define (user-select-folder)
+  (make-folder-entry (prompt "Enter folder path here")))
 
 (register-command
   "lambda:open-folder"

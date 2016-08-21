@@ -42,7 +42,7 @@ main(var args) async {
         handleMessage(msg).then((result) {
           respond({'result': result}, msg);
         }, onError: (error) {
-          respond({'result': error}, msg, 'error');
+          respond({'result': 'error'}, msg, 'error');
         });
       } catch (e, st) {
         print(e);
@@ -60,6 +60,7 @@ bool validateRequest(request) {
 }
 
 send(msg, socket) {
+  print("preencoded $msg");
   var str = JSON.encode(msg);
   socket.add(str);
   print("Sent $str");
@@ -77,11 +78,17 @@ handleMessage(msg) async {
   if (type == 'run') {
     var exec = msg['command'];
     var wd = msg.containsKey('directory') ? msg['directory'] : Directory.current.path;
+    if (wd.startsWith('~')) {
+      wd = Platform.environment['HOME'] + wd.substring(1);
+    }
     var result = await Process.run('bash', ['-c', exec], workingDirectory: wd);
     return {'stdout': result.stdout, 'stderr': result.stderr};
   } else if (type == 'start') {
     var exec = msg['command'];
     var wd = msg.containsKey('directory') ? msg['directory'] : Directory.current.path;
+    if (wd.startsWith('~')) {
+      wd = Platform.environment['HOME'] + wd.substring(1);
+    }
     var process = await Process.start('bash', ['-c', exec], workingDirectory: wd);
     process.exitCode.then((code) => respond({'exit-code': code}, msg, 'process-exit'));
     process.stdout

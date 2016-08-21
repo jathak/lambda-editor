@@ -24,8 +24,10 @@
 (add-menu-item "movelinesup" "Edit" "Move Lines Up")
 (add-menu-item "movelinesdown" "Edit" "Move Lines Down")
 
-(add-menu-item "sublime:goto" "Tools" "Go To")
-(add-menu-item "lambda:command-line" "Tools" "Command Line")
+;(add-menu-item "sublime:goto" "Tools" "Go To")
+(add-menu-item "lambda:command-line" "Tools" "Scheme Command Line")
+(add-menu-item "lambda:shell-log" "Tools" "Run Bash Command...")
+(add-menu-item "lambda:shell-log-input" "Tools" "Send Input to Process...")
 
 (add-menu-item (lambda () (edit-config 'commands)) "Settings" "Editor Commands")
 (add-menu-item (lambda () (edit-config 'bindings)) "Settings" "Key Bindings")

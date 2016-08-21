@@ -193,3 +193,9 @@ var timer = setInterval(function() {
     init();
   }
 }, 300);
+
+window.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.keyCode == 87) {
+    e.preventDefault();
+  }
+});

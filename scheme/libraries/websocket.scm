@@ -67,6 +67,9 @@
   (define result (socket-send-for-response msg))
   (cons (js-ref result "stdout") (js-ref result "stderr")))
 
+(define (clean-shell-run . args)
+  (js-call-on-string (car (apply shell-run args)) "trim"))
+
 (define (split-shell-lines run-result)
   (split (js-call-on-string (car run-result) "trim") "\n"))
 
@@ -83,10 +86,10 @@
   (js-set! msg "type" "start")
   (socket-send-for-response msg on-stdout on-stderr on-exit))
 
-(define (shell-input pid input)
+(define (shell-input pid . input)
   (define msg
     (js-object
       (cons "type" "input")
       (cons "pid" pid)
-      (cons "input" input)))
+      (cons "input" (apply string-append input))))
   (socket-send-for-response msg))
