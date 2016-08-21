@@ -7,6 +7,8 @@
 (js-set! window "activeCalls" _active-calls)
 (define wrapper-message (js "wrapperMessage"))
 
+(define (handle-wrapper-websocket type data) 'dummy)
+
 (js-call window "addEventListener" "message"
   (lambda (event)
     (define data (js-ref event 'data))
@@ -14,8 +16,10 @@
     (cond
       ((eq? type "command-response")
        (define call (js-ref _active-calls (js-ref data 'id)))
-       (call (js-ref data 'response))
-       (js-set! _active-calls (js-ref data 'id) nil)))))
+       (if (procedure? call) (call (js-ref data 'response)))
+       (js-set! _active-calls (js-ref data 'id) nil))
+      ((js-call-on-string type "startsWith" "websocket-")
+       (handle-wrapper-websocket type data)))))
 
 (define (wrapper-command command . args)
  (define msg
@@ -46,8 +50,10 @@
 (define (set-config! name contents)
  (wrapper-command "set-config" name contents))
 
+(define config-environment (let () (current-environment)))
+
 (define (load-config name . args)
- (define env (if (null? args) global-environment (car args)))
+ (define env (if (null? args) config-environment (car args)))
  (js-call scheme "runCode" (get-config name) env))
 
 (define scheme-build-info build-info)

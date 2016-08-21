@@ -3,8 +3,9 @@
     (list (cons path info)
         fn-read
         fn-save
-        (js-object "ace.EditSession" (fn-read) (find-mode path))
+        (js-object "ace.EditSession" "" (find-mode path))
         (lambda () nil)))
+  (file-update file)
   (refresh-session-prefs (file-session file))
   file)
 (define (file-path file) (car (car file)))
@@ -16,7 +17,10 @@
   (set-car! (cdr (cdr (cdr (cdr file)))) listener))
 
 (define (file-update file)
-  (js-call (file-session file) "setValue" (fn-read)))
+  (define text (try-catch ((file-reader file)) ""))
+  (define session (file-session file))
+  (js-call session "setValue" text))
+
 (define (file-session file) (car (cdr (cdr (cdr file)))))
 (define (file-apply-delta file delta)
   (js-call (js-call (file-session file) "getDocument")
@@ -34,7 +38,8 @@
   (define rest-info (cdr (cdr metadata)))
   (cond
     ((eq? type "chromefs") (make-chromefs-file path (car rest-info)))
-    ((eq? type "config") (make-config-file (car rest-info)))))
+    ((eq? type "config") (make-config-file (car rest-info)))
+    ((eq? type "socket") (make-socket-file path))))
 
 (define (find-mode path)
   (cond
@@ -73,15 +78,28 @@
             (js-call session "setValue" (wrapper-command "get-config" name)))
           (begin
             (wrapper-command "set-config" name (get-session-text session))
-            (background (load-config name)))))
+            (background (load-config name config-environment)))))
     "config"
     name))
 
-(define (user-select-file)
+(define (make-socket-file path)
+  (make-file
+    path
+    (lambda ()
+      (define result (shell-run (string-append "cat " path)))
+      (if (pair? result)
+          (car result)
+          (error "could not read file")))
+    (lambda (session)
+      (socket-write-file path (get-session-text session)))
+    "socket"))
+
+(define (user-select-chrome-file)
   (apply make-chromefs-file (wrapper-command "user-open-file")))
 
-;(define (user-select-folder)
-;  (apply make-chrome-fs-file (wrapper-command "user-open-directory")))
+(register-command
+  "lambda:open-chrome-file"
+  (lambda (editor) (open-file (user-select-chrome-file))))
 
 (register-command
   "lambda:open-file"

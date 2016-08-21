@@ -12,7 +12,9 @@ function respond(response, id) {
   iframe.contentWindow.postMessage(msg, '*');
 }
 
-var errorHandler = ()=>respond({'result': 'error'});
+function makeErrorHandler(id) {
+  return ()=>respond({'result': 'error'}, id);
+}
 
 var commands = {};
 
@@ -30,8 +32,9 @@ commands['get-config'] = function(name, id) {
     commands['fetch']('scheme/config/' + name + '.scm', id);
     return;
   }
+  var w = name == 'local-config' ? chrome.storage.local : chrome.storage.sync;
   var key = 'config_' + name;
-  chrome.storage.sync.get(key, function (items) {
+  w.get(key, function (items) {
     if(items.hasOwnProperty(key)) {
       respond(items[key], id);
     } else {
@@ -43,7 +46,8 @@ commands['get-config'] = function(name, id) {
 commands['set-config'] = function(name, contents, id) {
   var input = {}
   input['config_' + name] = contents;
-  chrome.storage.sync.set(input, function () {
+  var w = name == 'local-config' ? chrome.storage.local : chrome.storage.sync;
+  w.set(input, function () {
     respond(null, id);
   });
 }
@@ -85,7 +89,7 @@ commands['read-file'] = function(entryId, id) {
     entry.file(function (file) {
       var reader = new FileReader();
 
-      reader.onerror = errorHandler;
+      reader.onerror = makeErrorHandler(id);
       reader.onloadend = function(e) {
         respond(e.target.result, id);
       };
@@ -97,11 +101,51 @@ commands['read-file'] = function(entryId, id) {
 commands['save-file'] = function(entryId, contents, id) {
   chrome.fileSystem.restoreEntry(entryId, function (entry) {
     entry.createWriter(function (writer) {
-      writer.onerror = errorHandler;
+      writer.onerror = makeErrorHandler(id);
       writer.onwriteend = ()=>respond(null, id);
       writer.write(new Blob([contents]), {type: 'text/plain'});
-    }, errorHandler);
+    }, makeErrorHandler(id));
   })
+}
+
+var socket;
+
+commands['websocket-init'] = function(url, id) {
+  socket = new WebSocket(url);
+  socket.onopen = ()=>respond("success", id);
+  socket.onmessage = (event)=>{
+    var msg = {
+      'type': 'websocket-message',
+      'msg': JSON.parse(event.data)
+    }
+    iframe.contentWindow.postMessage(msg, '*');
+  };
+  socket.onerror = ()=>{
+    respond("failure", id);
+    var msg = {
+      'type': 'websocket-error'
+    }
+    iframe.contentWindow.postMessage(msg, '*');
+  };
+  socket.onclose = ()=>{
+    var msg = {
+      'type': 'websocket-close'
+    }
+    iframe.contentWindow.postMessage(msg, '*');
+  };
+}
+
+commands['websocket-send'] = function(msgObj, id) {
+  try {
+    if (socket && socket.readyState === 1) {
+      socket.send(JSON.stringify(msgObj));
+      respond("success", id);
+    } else {
+      throw(new Error(""));
+    }
+  } catch(e) {
+    respond("failure", id);
+  }
 }
 
 

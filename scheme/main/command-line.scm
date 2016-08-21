@@ -34,9 +34,13 @@
 
 ; all commands will be run in this environment directly
 ; extending the global environment
-(define command-environment (let () (current-environment)))
+(define command-environment nil)
 
-(define (reset-command-environment) (set! command-environment (current-environment)))
+(define (reset-command-environment)
+  (set! command-environment
+    (eval '(let () (current-environment)) config-environment)))
+
+(reset-command-environment)
 
 (define (open-command-line)
   (define el (make-element "textarea" "command-line"))

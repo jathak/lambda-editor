@@ -58,10 +58,10 @@
 (define (_on-all-elem elem proc)
   (cond ((null? elem) undefined)
         ((pair? elem)
-         (_on-all-elem (car elem) proc)
-         (_on-all-elem (cdr elem) proc))
+          (_on-all-elem (car elem) proc)
+          (_on-all-elem (cdr elem) proc))
         ((or (string? elem) (symbol? elem))
-         (_on-all-elem (query-selector-all elem) proc))
+          (_on-all-elem (query-selector-all elem) proc))
         (else (proc elem))))
 
 (define (set-css-prop! elem key value)

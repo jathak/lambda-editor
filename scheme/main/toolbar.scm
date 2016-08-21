@@ -12,7 +12,7 @@
 
 (define (redraw-toolbar)
   (define wrapper (query-selector ".toolbar"))
-  (js-set! wrapper "innerHTML" "")
+  (js-set! wrapper "innerText" "")
   (define (construct-toolbar menus root parent)
     (if (null? menus) nil
         (begin
@@ -23,11 +23,11 @@
         (add-child parent (make-element "hr"))
         (begin
           (define item-el (make-element "div" (if root "menu-root" "menu-item")))
-          (js-set! item-el "innerHTML" (menu-name menu))
+          (js-set! item-el "innerText" (menu-name menu))
           (if (not root)
             (begin
               (define subtitle (make-element "span" "menu-subtitle"))
-              (js-set! subtitle "innerHTML" (menu-subtitle menu))
+              (js-set! subtitle "innerText" (menu-subtitle menu))
               (add-child item-el subtitle)))
           (if (menu-leaf? menu)
               (on-event item-el "click" (lambda args (redraw-toolbar) ((menu-procedure menu))))

@@ -4,6 +4,17 @@
   (js-set! style "innerHTML" css)
   (add-child (js "document.head") style))
 
+(define (attempt-proc proc on-error)
+  (define js-runner
+    (js "(proc)=>proc().then((r)=>[true, r], (e)=>[false, e])"))
+  (define result-pair (js-runner proc))
+  (define status (car result-pair))
+  (define result (car (cdr result-pair)))
+  (if status result (on-error result)))
+
+(define-macro (try-catch expr fallback)
+  `(attempt-proc (lambda () ,expr) (lambda _____args ,fallback)))
+
 (define (string-or-symbol? val)
   (or (string? val) (symbol? val)))
 

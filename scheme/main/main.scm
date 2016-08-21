@@ -6,6 +6,8 @@
   (library 'html)
   (library 'strings))
 
+(library 'websocket) ; depends on strings
+
 (load-ace "editor")
 (js-set! window 'editor editor)
 
@@ -15,23 +17,25 @@
 (define (update-status status)
   (js-set! statusbar "innerText" (string-append status)))
 
-(js-set! (js "scheme")
-         "onOutput"
-         (lambda (output error?) (if error? (update-status (string-append "Error: " output)))))
+;(js-set! (js "scheme")
+;         "onOutput"
+;         (lambda (output . error?) (if error? (update-status (string-append "Error: " output))))))
 
 (import 'preference-manager)
 (import 'toolbar)
 (import 'file-manager)
 (import 'tabs)
+(import 'sidebar)
 (import 'command-line)
 
 ; loads all config files in separate isolated envs
-(parallel-procs
-  (lambda () (load-config 'commands (current-environment)))
-  (lambda () (load-config 'bindings (current-environment)))
-  (lambda () (load-config 'menus (current-environment)))
-  (lambda () (load-config 'theme (current-environment)))
-  (lambda () (load-config 'preferences (current-environment))))
+(parallel
+  (load-config 'commands config-environment)
+  (load-config 'bindings config-environment)
+  (load-config 'menus config-environment)
+  (load-config 'theme config-environment)
+  (load-config 'preferences config-environment))
+(load-config 'local-config config-environment)
 (define config-complete #t)
 
 (define (reload-tabs)
@@ -51,9 +55,10 @@
 (define (edit-config name)
   (activate-tab (make-tab (make-config-file name))))
 
-(parallel-procs
-  redraw-toolbar
-  refresh-editor-prefs)
+(parallel
+  (init-socket (get-pref "server-url"))
+  (redraw-toolbar)
+  (refresh-editor-prefs))
 
 (reload-tabs)
 
