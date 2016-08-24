@@ -117,6 +117,29 @@
 (define (new-tab)
   (save-tabs-state))
 
+(define (prev-tab)
+  (define (helper lst)
+    (let ((first (car lst)) (rest (cdr lst)))
+         (if (eq? first active-tab)
+             (if (null? rest)
+                 (activate-tab (car _tab-list))
+                 (activate-tab (car rest)))
+             (helper rest))))
+  (helper _tab-list))
+
+(define (next-tab)
+  (define (helper lst prev)
+    (if (eq? (car lst) active-tab)
+        (activate-tab prev)
+        (helper (cdr lst) (car lst))))
+  (helper _tab-list (last _tab-list)))
+
 (register-command
   "lambda:close-file"
   (lambda (editor) (close-tab active-tab)))
+(register-command
+  "lambda:next-tab"
+  (lambda (editor) (next-tab)))
+(register-command
+  "lambda:prev-tab"
+  (lambda (editor) (prev-tab)))

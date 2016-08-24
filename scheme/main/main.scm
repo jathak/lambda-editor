@@ -12,7 +12,7 @@
 (js-set! window 'editor editor)
 (js "editor.$blockScrolling = Infinity; 0") ; workaround
 
-;(background (init-ace-module "ace/ext/keybinding_menu"))
+(background (init-ace-module "ace/ext/keybinding_menu"))
 
 (define statusbar (query-selector ".statusbar"))
 (define (update-status status)
@@ -22,6 +22,7 @@
 ;         "onOutput"
 ;         (lambda (output . error?) (if error? (update-status (string-append "Error: " output))))))
 
+(import 'keyboard-events)
 (import 'preference-manager)
 (import 'toolbar)
 (import 'file-manager)
@@ -88,7 +89,6 @@
 (define shell-hostname (clean-shell-run "echo $HOSTNAME"))
 
 (reload-tabs)
-
 
 (js-set! (query-selector ".loading") "className" "loading hidden")
 (js-set! window "onfocus" (lambda args (js-call editor 'focus)))

@@ -46,28 +46,6 @@
            "addCommand"
            (apply make-command args)))
 
-(define (register-binding command binding . rest)
-  (js-call (js-ref editor 'commands) "bindKey" binding command)
-  (js-set! _command-keys command binding)
-  (if (not (null? rest))
-      (apply register-binding (cons command rest))))
-
-(define _command-keys (js-object))
-
-(define (get-command-binding command)
-  (define commands (js-ref (js-ref editor 'commands) 'commands))
-  (if (js-has-property? _command-keys command)
-      (js-ref _command-keys command)
-      (if (js-has-property? commands command)
-        (let ((cmd-obj (js-ref commands command)))
-             (if (js-has-property? cmd-obj "bindKey")
-                 (js-ref (js-ref cmd-obj "bindKey") (js "editor.commands.platform"))
-                 ""))
-        "")))
-
-(define (clear-binding . args)
-  (apply register-binding (cons undefined args)))
-
 (define (exec-command command)
   (js-call editor "execCommand" command))
 

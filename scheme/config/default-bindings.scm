@@ -35,3 +35,5 @@
 (register-binding "lambda:close-file" "Ctrl-W")
 (register-binding "lambda:shell-log" "Ctrl-Shift-P")
 (register-binding "lambda:shell-log-input" "Ctrl-I")
+(register-binding "lambda:next-tab" "Ctrl-Tab")
+(register-binding "lambda:prev-tab" "Ctrl-Shift-Tab")
